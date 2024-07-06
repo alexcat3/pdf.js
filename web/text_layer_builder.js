@@ -208,11 +208,46 @@ class TextLayerBuilder {
       // eslint-disable-next-line no-var
       var isFirefox, prevRange;
     }
-
+    // Prevent flickering when we change selections to remove the textLayer
+    // div from them by making selections invisible when the current selection
+    // contains only that div, and making them re-visible when it contains
+    // other things
+    document.addEventListener("selectstart", () => {
+      const selection = document.getSelection();
+      if (
+        selection.anchorNode.className === "textLayer" &&
+        selection.focusNode === selection.anchorNode
+      ) {
+        document.body.classList.add("invisibleSelection");
+      } else {
+        document.body.classList.remove("invisibleSelection");
+      }
+    });
     document.addEventListener(
       "selectionchange",
       () => {
         const selection = document.getSelection();
+
+        // Prevent the textLayer div from anchoring selections and causing them
+        // to start at the top of the page
+
+        if (selection.anchorNode.className === "textLayer") {
+          selection.collapseToEnd();
+        }
+
+        // Prevent flickering when we change selections to remove the textLayer
+        // div from them by making selections invisible when the current
+        // selection contains only that div, and making them re-visible when it
+        // contains other things
+        if (
+          selection.anchorNode.className === "textLayer" &&
+          selection.focusNode === selection.anchorNode
+        ) {
+          document.body.classList.add("invisibleSelection");
+        } else {
+          document.body.classList.remove("invisibleSelection");
+        }
+
         if (selection.rangeCount === 0) {
           this.#textLayers.forEach(reset);
           return;

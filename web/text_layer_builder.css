@@ -123,3 +123,6 @@
     }
   }
 }
+.invisibleSelection ::selection {
+  background-color: transparent !important;
+}
